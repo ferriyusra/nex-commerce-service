@@ -20,7 +20,8 @@ var validate = validator.New()
 
 type AuthHandler interface {
 	Login(c *fiber.Ctx) error
-	Register(c *fiber.Ctx) error
+	RegisterSeller(c *fiber.Ctx) error
+	RegisterCustomer(c *fiber.Ctx) error
 }
 
 type authHandler struct {
@@ -80,11 +81,11 @@ func (a *authHandler) Login(c *fiber.Ctx) error {
 	return c.JSON(res)
 }
 
-func (a *authHandler) Register(c *fiber.Ctx) error {
+func (a *authHandler) RegisterSeller(c *fiber.Ctx) error {
 	var req request.RegisterRequest
 
 	if err = c.BodyParser((&req)); err != nil {
-		code = "[HANDLER] Register - 1"
+		code = "[HANDLER] RegisterSeller - 1"
 		log.Errorw(code, err)
 		errorResponse.Meta.Status = false
 		errorResponse.Meta.Message = "Invalid request body"
@@ -94,7 +95,7 @@ func (a *authHandler) Register(c *fiber.Ctx) error {
 	}
 
 	if err = validatorLib.ValidateStruct(req); err != nil {
-		code = "[HANDLER] Register - 2"
+		code = "[HANDLER] RegisterSeller - 2"
 		log.Errorw(code, err)
 		errorResponse.Meta.Status = false
 		errorResponse.Meta.Message = err.Error()
@@ -103,7 +104,70 @@ func (a *authHandler) Register(c *fiber.Ctx) error {
 	}
 
 	if req.ConfirmPassword != req.Password {
-		code := "[HANDLER] Register - 3"
+		code := "[HANDLER] RegisterSeller - 3"
+		err = errors.New("password confirmation does not match")
+		log.Errorw(code, err)
+		errorResponse.Meta.Status = false
+		errorResponse.Meta.Message = err.Error()
+
+		return c.Status(fiber.StatusBadRequest).JSON(errorResponse)
+	}
+
+	reqEntity := entity.RegisterRequest{
+		Username: req.Username,
+		Email:    req.Email,
+		Role:     "seller",
+		Password: req.Password,
+	}
+
+	result, err := a.authService.RegisterCustomer(c.Context(), reqEntity)
+	if err != nil {
+		code = "[HANDLER] RegisterSeller - 4"
+		log.Errorw(code, err)
+		errorResponse.Meta.Status = false
+		errorResponse.Meta.Message = err.Error()
+
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResponse)
+	}
+
+	res := response.UserResponse{
+		ID:       result.ID,
+		Username: result.Username,
+		Email:    result.Email,
+		Role:     result.Role,
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Register Seller Successful"
+	defaultSuccessResponse.Data = res
+
+	return c.JSON(defaultSuccessResponse)
+}
+
+func (a *authHandler) RegisterCustomer(c *fiber.Ctx) error {
+	var req request.RegisterRequest
+
+	if err = c.BodyParser((&req)); err != nil {
+		code = "[HANDLER] RegisterCustomer - 1"
+		log.Errorw(code, err)
+		errorResponse.Meta.Status = false
+		errorResponse.Meta.Message = "Invalid request body"
+
+		return c.Status(fiber.StatusBadRequest).JSON(errorResponse)
+
+	}
+
+	if err = validatorLib.ValidateStruct(req); err != nil {
+		code = "[HANDLER] RegisterCustomer - 2"
+		log.Errorw(code, err)
+		errorResponse.Meta.Status = false
+		errorResponse.Meta.Message = err.Error()
+
+		return c.Status(fiber.StatusBadRequest).JSON(errorResponse)
+	}
+
+	if req.ConfirmPassword != req.Password {
+		code := "[HANDLER] RegisterCustomer - 3"
 		err = errors.New("password confirmation does not match")
 		log.Errorw(code, err)
 		errorResponse.Meta.Status = false
@@ -119,9 +183,9 @@ func (a *authHandler) Register(c *fiber.Ctx) error {
 		Password: req.Password,
 	}
 
-	result, err := a.authService.Register(c.Context(), reqEntity)
+	result, err := a.authService.RegisterCustomer(c.Context(), reqEntity)
 	if err != nil {
-		code = "[HANDLER] Register - 4"
+		code = "[HANDLER] RegisterCustomer - 4"
 		log.Errorw(code, err)
 		errorResponse.Meta.Status = false
 		errorResponse.Meta.Message = err.Error()
@@ -136,9 +200,8 @@ func (a *authHandler) Register(c *fiber.Ctx) error {
 		Role:     result.Role,
 	}
 
-	defaultSuccessResponse.Pagination = nil
 	defaultSuccessResponse.Meta.Status = true
-	defaultSuccessResponse.Meta.Message = "Register Successful"
+	defaultSuccessResponse.Meta.Message = "Register Customer Successful"
 	defaultSuccessResponse.Data = res
 
 	return c.JSON(defaultSuccessResponse)

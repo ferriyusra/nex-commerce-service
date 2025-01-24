@@ -29,3 +29,25 @@ func UserSeller(db *gorm.DB) {
 		log.Info().Msg("seed seller success")
 	}
 }
+
+func UserAdmin(db *gorm.DB) {
+	bytes, err := conv.HashPassword("admin123")
+	if err != nil {
+		log.Fatal().Err(err).Msg("error hashing password")
+	}
+
+	admin := model.User{
+		Username: "admin",
+		Email:    "admin@gmail.com",
+		Role:     "admin",
+		Password: string(bytes),
+	}
+
+	if err := db.FirstOrCreate(&admin, model.User{
+		Email: "admin@gmail.com",
+	}).Error; err != nil {
+		log.Fatal().Err(err).Msg("error seed admin")
+	} else {
+		log.Info().Msg("seed admin success")
+	}
+}

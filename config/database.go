@@ -9,7 +9,6 @@ import (
 	"gorm.io/gorm"
 )
 
-
 type Postgres struct {
 	DB *gorm.DB
 }
@@ -34,7 +33,8 @@ func (cfg Config) ConnectionPostgres() (*Postgres, error) {
 		return nil, err
 	}
 
-	seeds.UserSeller(db)
+	// seeds.UserSeller(db)
+	seeds.UserAdmin(db)
 
 	sqlDB.SetMaxOpenConns(cfg.Psql.DBMaxOpen)
 	sqlDB.SetMaxIdleConns(cfg.Psql.DBMaxIdle)

@@ -18,7 +18,8 @@ var err string
 var code string
 
 type AuthService interface {
-	Register(ctx context.Context, req entity.RegisterRequest) (*entity.UserEntity, error)
+	RegisterSeller(ctx context.Context, req entity.RegisterRequest) (*entity.UserEntity, error)
+	RegisterCustomer(ctx context.Context, req entity.RegisterRequest) (*entity.UserEntity, error)
 	GetUserByEmail(ctx context.Context, req entity.LoginRequest) (*entity.AccessToken, error)
 }
 
@@ -28,20 +29,48 @@ type authService struct {
 	jwtToken       auth.Jwt
 }
 
-func (a *authService) Register(ctx context.Context, req entity.RegisterRequest) (*entity.UserEntity, error) {
+func (a *authService) RegisterSeller(ctx context.Context, req entity.RegisterRequest) (*entity.UserEntity, error) {
 
 	password, err := conv.HashPassword(req.Password)
 	if err != nil {
-		code := "[SERVICE] Register - 1"
+		code := "[SERVICE] RegisterSeller - 1"
 		log.Errorw(code, err)
 		return nil, err
 	}
 
 	req.Password = password
 
-	result, err := a.authRepository.Register(ctx, req)
+	result, err := a.authRepository.RegisterCustomer(ctx, req)
 	if err != nil {
-		code = "[SERVICE] Register - 2"
+		code = "[SERVICE] RegisterSeller - 2"
+		log.Errorw(code, err)
+		return result, nil
+	}
+
+	result = &entity.UserEntity{
+		ID:       result.ID,
+		Username: result.Username,
+		Email:    result.Email,
+		Role:     result.Role,
+	}
+
+	return result, nil
+}
+
+func (a *authService) RegisterCustomer(ctx context.Context, req entity.RegisterRequest) (*entity.UserEntity, error) {
+
+	password, err := conv.HashPassword(req.Password)
+	if err != nil {
+		code := "[SERVICE] RegisterCustomer - 1"
+		log.Errorw(code, err)
+		return nil, err
+	}
+
+	req.Password = password
+
+	result, err := a.authRepository.RegisterCustomer(ctx, req)
+	if err != nil {
+		code = "[SERVICE] RegisterCustomer - 2"
 		log.Errorw(code, err)
 		return result, nil
 	}

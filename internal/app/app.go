@@ -8,7 +8,6 @@ import (
 	"nex-commerce-service/internal/adapter/repository"
 	"nex-commerce-service/internal/core/service"
 	"nex-commerce-service/lib/auth"
-	"nex-commerce-service/lib/middleware"
 	"nex-commerce-service/lib/pagination"
 	"os"
 	"os/signal"
@@ -37,22 +36,22 @@ func RunServer() {
 
 	// auth and middleware
 	jwt := auth.NewJwt(cfg)
-	middlewareAuth := middleware.NewMiddleware(cfg)
+	// middlewareAuth := middleware.NewMiddleware(cfg)
 
 	// pagination
 	_ = pagination.NewPagination()
 
 	// repository
 	authRepo := repository.NewAuthRepository(db.DB)
-	userRepo := repository.NewUserRepository(db.DB)
+	// userRepo := repository.NewUserRepository(db.DB)
 
 	// service
 	authService := service.NewAuthService(authRepo, cfg, jwt)
-	userService := service.NewUserService(userRepo)
+	// userService := service.NewUserService(userRepo)
 
 	// handler
 	authHandler := handler.NewAuthHandler(authService)
-	userHandler := handler.NewUserHandler(userService)
+	// userHandler := handler.NewUserHandler(userService)
 
 	// intitalization server
 	app := fiber.New()
@@ -62,31 +61,20 @@ func RunServer() {
 		Format: "[${time}] ${ip} ${status} - ${latency} ${method} ${path}\n",
 	}))
 
-	// if os.Getenv("APP_ENV") != "production" {
-	// 	cfg := swagger.Config{
-	// 		BasePath: "/api",
-	// 		FilePath: "./docs/swagger.json",
-	// 		Path:     "docs",
-	// 		Title:    "Swagger API Docs",
-	// 	}
-
-	// 	app.Use(swagger.New(cfg))
-	// }
-
 	api := app.Group("/api")
-	api.Post("/login", authHandler.Login)
+	api.Post("/auth/login", authHandler.Login)
 
 	// user as customer
-	customerApp := api.Group("/customers")
-	customerApp.Post("/register", authHandler.Register)
-
-	sellerApp := api.Group("/seller")
-	sellerApp.Use(middlewareAuth.CheckToken())
+	customerApp := api.Group("/auth/customers")
+	customerApp.Post("/register", authHandler.RegisterCustomer)
 
 	// user as seller
-	userSeller := sellerApp.Group("/users")
-	userSeller.Get("/profile", userHandler.GetUserByID)
-	userSeller.Put("/update-password", userHandler.UpdatePassword)
+	sellerApp := api.Group("/auth/sellers")
+	sellerApp.Post("/register", authHandler.RegisterSeller)
+
+	// sellerApp.Use(middlewareAuth.CheckToken())
+	// sellerApp.Get("/profile", userHandler.GetUserByID)
+	// sellerApp.Put("/update-password", userHandler.UpdatePassword)
 
 	go func() {
 		if cfg.App.AppPort == "" {
