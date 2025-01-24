@@ -12,6 +12,7 @@ import (
 
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/shopspring/decimal"
 )
 
 type AuthService interface {
@@ -59,7 +60,7 @@ func (a *authService) RegisterSeller(ctx context.Context, req entity.RegisterReq
 
 	err = a.accountRepository.CreateAccountWallet(ctx, entity.AccountEntity{
 		UserID:  result.ID,
-		Balance: 0,
+		Balance: decimal.NewFromFloat(0.0),
 	})
 	if err != nil {
 		code := "[SERVICE] RegisterSeller - 3"
@@ -97,7 +98,7 @@ func (a *authService) RegisterCustomer(ctx context.Context, req entity.RegisterR
 
 	err = a.accountRepository.CreateAccountWallet(ctx, entity.AccountEntity{
 		UserID:  result.ID,
-		Balance: 0,
+		Balance: decimal.NewFromFloat(0.0),
 	})
 	if err != nil {
 		code := "[SERVICE] RegisterCustomer - 3"
