@@ -1,5 +1,5 @@
 create migration
-- migrate create -ext sql -dir database/migrations -seq create_table_name_table
+- migrate create -ext sql -dir database/migrations -seq create_table_products
 
 run migration
 

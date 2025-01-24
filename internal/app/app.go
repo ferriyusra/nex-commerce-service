@@ -43,14 +43,17 @@ func RunServer() {
 
 	// repository
 	authRepo := repository.NewAuthRepository(db.DB)
+	productRepo := repository.NewProductRepository(db.DB)
 	// userRepo := repository.NewUserRepository(db.DB)
 
 	// service
 	authService := service.NewAuthService(authRepo, cfg, jwt)
+	productService := service.NewProductService(productRepo)
 	// userService := service.NewUserService(userRepo)
 
 	// handler
 	authHandler := handler.NewAuthHandler(authService)
+	productHandler := handler.NewProductHandler(productService)
 	// userHandler := handler.NewUserHandler(userService)
 
 	// intitalization server
@@ -71,6 +74,9 @@ func RunServer() {
 	// user as seller
 	sellerApp := api.Group("/auth/sellers")
 	sellerApp.Post("/register", authHandler.RegisterSeller)
+
+	productApp := api.Group("/products")
+	productApp.Get("/", productHandler.FindAll)
 
 	// sellerApp.Use(middlewareAuth.CheckToken())
 	// sellerApp.Get("/profile", userHandler.GetUserByID)
