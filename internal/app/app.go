@@ -47,19 +47,19 @@ func RunServer() {
 	accountRepo := repository.NewAccountRepository(db.DB)
 	productRepo := repository.NewProductRepository(db.DB)
 	financialRepo := repository.NewFinancialRepository(db.DB)
-	// userRepo := repository.NewUserRepository(db.DB)
+	cartRepo := repository.NewCartRepository(db.DB)
 
 	// service
 	authService := service.NewAuthService(authRepo, accountRepo, cfg, jwt)
 	productService := service.NewProductService(productRepo)
 	financialService := service.NewFinancialService(financialRepo)
-	// userService := service.NewUserService(userRepo)
+	cartService := service.NewCartService(cartRepo)
 
 	// handler
 	authHandler := handler.NewAuthHandler(authService)
 	productHandler := handler.NewProductHandler(productService)
 	financialHandler := handler.NewFinancialHandler(financialService)
-	// userHandler := handler.NewUserHandler(userService)
+	cartHandler := handler.NewCartHandler(cartService)
 
 	// intitalization server
 	app := fiber.New()
@@ -88,6 +88,11 @@ func RunServer() {
 	financialApp.Get("/balance", financialHandler.GetBalance)
 	financialApp.Post("/deposit", financialHandler.Deposit)
 	financialApp.Post("/withdraw", financialHandler.Withdraw)
+
+	cartApp := api.Group("/carts")
+	cartApp.Use(middlewareAuth.CheckToken())
+	cartApp.Get("/", cartHandler.GetCartByUserID)
+	cartApp.Post("/add", cartHandler.AddToCart)
 
 	// sellerApp.Use(middlewareAuth.CheckToken())
 	// sellerApp.Get("/profile", userHandler.GetUserByID)
