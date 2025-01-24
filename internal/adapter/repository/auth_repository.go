@@ -40,6 +40,7 @@ func (a *authRepository) GetUserByEmail(ctx context.Context, req entity.LoginReq
 	response := entity.UserEntity{
 		ID:       modelUser.ID,
 		Username: modelUser.Username,
+		Role:     modelUser.Role,
 		Email:    modelUser.Email,
 		Password: modelUser.Password,
 	}
