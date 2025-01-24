@@ -30,7 +30,7 @@ func (p *productService) Create(ctx context.Context, req entity.ProductEntity) e
 
 	err := p.productRepository.Create(ctx, req)
 	if err != nil {
-		code = "[SERVICE] Create - 1"
+		code := "[SERVICE] Create - 1"
 		log.Errorw(code, err)
 		return err
 	}
@@ -42,7 +42,7 @@ func (p *productService) Create(ctx context.Context, req entity.ProductEntity) e
 func (p *productService) Delete(ctx context.Context, id int64) error {
 	err := p.productRepository.Delete(ctx, id)
 	if err != nil {
-		code = "[SERVICE] Delete - 1"
+		code := "[SERVICE] Delete - 1"
 		log.Errorw(code, err)
 		return err
 	}
@@ -53,7 +53,7 @@ func (p *productService) Delete(ctx context.Context, id int64) error {
 func (p *productService) GetByID(ctx context.Context, id int64) (*entity.ProductEntity, error) {
 	result, err := p.productRepository.GetByID(ctx, id)
 	if err != nil {
-		code = "[SERVICE] GetByID - 1"
+		code := "[SERVICE] GetByID - 1"
 		log.Errorw(code, err)
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (p *productService) GetByID(ctx context.Context, id int64) (*entity.Product
 func (p *productService) FindAll(ctx context.Context, query entity.QueryString) ([]entity.ProductEntity, int64, int64, error) {
 	results, totalData, totalPages, err := p.productRepository.FindAll(ctx, query)
 	if err != nil {
-		code = "[SERVICE] Get - 1"
+		code := "[SERVICE] Get - 1"
 		log.Errorw(code, err)
 		return nil, 0, 0, err
 	}
@@ -75,7 +75,7 @@ func (p *productService) FindAll(ctx context.Context, query entity.QueryString) 
 func (p *productService) Update(ctx context.Context, req entity.ProductEntity) error {
 	err := p.productRepository.Update(ctx, req)
 	if err != nil {
-		code = "[SERVICE] Update - 1"
+		code := "[SERVICE] Update - 1"
 		log.Errorw(code, err)
 		return err
 	}

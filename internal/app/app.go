@@ -43,11 +43,12 @@ func RunServer() {
 
 	// repository
 	authRepo := repository.NewAuthRepository(db.DB)
+	accountRepo := repository.NewAccountRepository(db.DB)
 	productRepo := repository.NewProductRepository(db.DB)
 	// userRepo := repository.NewUserRepository(db.DB)
 
 	// service
-	authService := service.NewAuthService(authRepo, cfg, jwt)
+	authService := service.NewAuthService(authRepo, accountRepo, cfg, jwt)
 	productService := service.NewProductService(productRepo)
 	// userService := service.NewUserService(userRepo)
 

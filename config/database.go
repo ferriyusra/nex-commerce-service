@@ -35,6 +35,7 @@ func (cfg Config) ConnectionPostgres() (*Postgres, error) {
 	// seeds.UserSeller(db)
 	// seeds.UserAdmin(db)
 	// seeds.Product(db)
+	// seeds.Account(db)
 
 	sqlDB.SetMaxOpenConns(cfg.Psql.DBMaxOpen)
 	sqlDB.SetMaxIdleConns(cfg.Psql.DBMaxIdle)
