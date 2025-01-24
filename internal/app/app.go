@@ -75,6 +75,7 @@ func RunServer() {
 
 	api := app.Group("/api")
 	api.Post("/login", authHandler.Login)
+	api.Post("/register", authHandler.Register)
 
 	sellerApp := api.Group("/seller")
 	sellerApp.Use(middlewareAuth.CheckToken())

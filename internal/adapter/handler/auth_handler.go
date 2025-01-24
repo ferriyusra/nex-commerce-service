@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"nex-commerce-service/internal/adapter/handler/request"
 	"nex-commerce-service/internal/adapter/handler/response"
 	"nex-commerce-service/internal/core/domain/entity"
@@ -12,7 +13,6 @@ import (
 	"github.com/gofiber/fiber/v2/log"
 )
 
-
 var err error
 var code string
 var errorResponse response.ErrorResponseDefault
@@ -20,6 +20,7 @@ var validate = validator.New()
 
 type AuthHandler interface {
 	Login(c *fiber.Ctx) error
+	Register(c *fiber.Ctx) error
 }
 
 type authHandler struct {
@@ -77,6 +78,70 @@ func (a *authHandler) Login(c *fiber.Ctx) error {
 	res.ExpiresAt = result.ExpiresAt
 
 	return c.JSON(res)
+}
+
+func (a *authHandler) Register(c *fiber.Ctx) error {
+	var req request.RegisterRequest
+
+	if err = c.BodyParser((&req)); err != nil {
+		code = "[HANDLER] Register - 1"
+		log.Errorw(code, err)
+		errorResponse.Meta.Status = false
+		errorResponse.Meta.Message = "Invalid request body"
+
+		return c.Status(fiber.StatusBadRequest).JSON(errorResponse)
+
+	}
+
+	if err = validatorLib.ValidateStruct(req); err != nil {
+		code = "[HANDLER] Register - 2"
+		log.Errorw(code, err)
+		errorResponse.Meta.Status = false
+		errorResponse.Meta.Message = err.Error()
+
+		return c.Status(fiber.StatusBadRequest).JSON(errorResponse)
+	}
+
+	if req.ConfirmPassword != req.Password {
+		code := "[HANDLER] Register - 3"
+		err = errors.New("password confirmation does not match")
+		log.Errorw(code, err)
+		errorResponse.Meta.Status = false
+		errorResponse.Meta.Message = err.Error()
+
+		return c.Status(fiber.StatusBadRequest).JSON(errorResponse)
+	}
+
+	reqEntity := entity.RegisterRequest{
+		Username: req.Username,
+		Email:    req.Email,
+		Role:     "customer",
+		Password: req.Password,
+	}
+
+	result, err := a.authService.Register(c.Context(), reqEntity)
+	if err != nil {
+		code = "[HANDLER] Register - 4"
+		log.Errorw(code, err)
+		errorResponse.Meta.Status = false
+		errorResponse.Meta.Message = err.Error()
+
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResponse)
+	}
+
+	res := response.UserResponse{
+		ID:       result.ID,
+		Username: result.Username,
+		Email:    result.Email,
+		Role:     result.Role,
+	}
+
+	defaultSuccessResponse.Pagination = nil
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Register Successful"
+	defaultSuccessResponse.Data = res
+
+	return c.JSON(defaultSuccessResponse)
 }
 
 func NewAuthHandler(authService service.AuthService) AuthHandler {

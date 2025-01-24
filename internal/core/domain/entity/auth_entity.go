@@ -5,6 +5,13 @@ type LoginRequest struct {
 	Password string
 }
 
+type RegisterRequest struct {
+	Email    string
+	Username string
+	Role     string
+	Password string
+}
+
 type AccessToken struct {
 	AccessToken string
 	ExpiresAt   int64

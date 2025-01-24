@@ -4,9 +4,9 @@ import "time"
 
 type User struct {
 	ID        int64      `gorm:"id"`
-	Username      string     `gorm:"username"`
+	Username  string     `gorm:"username"`
 	Email     string     `gorm:"email"`
-	Role     string     `gorm:"role"`
+	Role      string     `gorm:"role"`
 	Password  string     `gorm:"password"`
 	CreatedAt time.Time  `gorm:"created_at"`
 	UpdatedAt *time.Time `gorm:"updated_at"`
