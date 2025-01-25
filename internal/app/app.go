@@ -48,18 +48,21 @@ func RunServer() {
 	productRepo := repository.NewProductRepository(db.DB)
 	financialRepo := repository.NewFinancialRepository(db.DB)
 	cartRepo := repository.NewCartRepository(db.DB)
+	transactionRepo := repository.NewTransactionRepository(db.DB)
 
 	// service
 	authService := service.NewAuthService(authRepo, accountRepo, cfg, jwt)
 	productService := service.NewProductService(productRepo)
 	financialService := service.NewFinancialService(financialRepo)
 	cartService := service.NewCartService(cartRepo)
+	transactionService := service.NewTransactionService(transactionRepo)
 
 	// handler
 	authHandler := handler.NewAuthHandler(authService)
 	productHandler := handler.NewProductHandler(productService)
 	financialHandler := handler.NewFinancialHandler(financialService)
 	cartHandler := handler.NewCartHandler(cartService)
+	transactionHandler := handler.NewTransactionHandler(transactionService)
 
 	// intitalization server
 	app := fiber.New()
@@ -85,18 +88,18 @@ func RunServer() {
 
 	financialApp := api.Group("/financial")
 	financialApp.Use(middlewareAuth.CheckToken())
-	financialApp.Get("/balance", financialHandler.GetBalance)
-	financialApp.Post("/deposit", financialHandler.Deposit)
-	financialApp.Post("/withdraw", financialHandler.Withdraw)
+	financialApp.Get("/balance", middleware.ACLMiddleware([]string{"customer", "seller"}), financialHandler.GetBalance)
+	financialApp.Post("/deposit", middleware.ACLMiddleware([]string{"customer"}), financialHandler.Deposit)
+	financialApp.Post("/withdraw", middleware.ACLMiddleware([]string{"seller"}), financialHandler.Withdraw)
 
 	cartApp := api.Group("/carts")
 	cartApp.Use(middlewareAuth.CheckToken())
-	cartApp.Get("/", cartHandler.GetCartByUserID)
-	cartApp.Post("/add", cartHandler.AddToCart)
+	cartApp.Get("/", middleware.ACLMiddleware([]string{"customer"}), cartHandler.GetCartByUserID)
+	cartApp.Post("/add", middleware.ACLMiddleware([]string{"customer"}), cartHandler.AddToCart)
 
-	// sellerApp.Use(middlewareAuth.CheckToken())
-	// sellerApp.Get("/profile", userHandler.GetUserByID)
-	// sellerApp.Put("/update-password", userHandler.UpdatePassword)
+	transactionApp := api.Group("/transactions")
+	transactionApp.Use(middlewareAuth.CheckToken())
+	transactionApp.Post("/checkout", middleware.ACLMiddleware([]string{"customer"}), transactionHandler.Checkout)
 
 	go func() {
 		if cfg.App.AppPort == "" {

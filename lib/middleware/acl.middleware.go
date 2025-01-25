@@ -1,19 +1,26 @@
 package middleware
 
 import (
+	"nex-commerce-service/internal/adapter/handler/response"
+
 	"github.com/gofiber/fiber/v2"
 )
 
 func ACLMiddleware(allowedRoles []string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		role := c.Locals("user_role")
+		var errorResponse response.ErrorResponseDefault
+		role := c.Locals("roleName")
 		if role == nil {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "forbidden"})
+			errorResponse.Meta.Status = false
+			errorResponse.Meta.Message = "Forbidden"
+			return c.Status(fiber.StatusForbidden).JSON(errorResponse)
 		}
 
 		userRole, ok := role.(string)
 		if !ok || !contains(allowedRoles, userRole) {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "forbidden"})
+			errorResponse.Meta.Status = false
+			errorResponse.Meta.Message = "Forbidden"
+			return c.Status(fiber.StatusForbidden).JSON(errorResponse)
 		}
 
 		return c.Next()

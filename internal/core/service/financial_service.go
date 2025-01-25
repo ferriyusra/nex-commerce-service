@@ -34,7 +34,7 @@ func (f *financialService) Deposit(ctx context.Context, req entity.DepositEntity
 		return nil
 	}
 
-	// Fetch account balance
+	// ambil account balance
 	account, err := f.financialRepository.GetBalance(ctx, req.UserID)
 	if err != nil {
 		code := "[SERVICE] Deposit - 2"
@@ -42,10 +42,10 @@ func (f *financialService) Deposit(ctx context.Context, req entity.DepositEntity
 		return err
 	}
 
-	// Calculate the new balance
+	// hitung balance terbaru
 	newBalance := account.Balance.Add(req.Amount)
 
-	// Log the calculated balance
+	// Log the perhitungan balance
 	log.Debugw("Calculated New Balance", "currentBalance", account.Balance, "depositAmount", req.Amount, "newBalance", newBalance)
 
 	err = f.financialRepository.Deposit(ctx, req)
@@ -69,24 +69,25 @@ func (f *financialService) Withdraw(ctx context.Context, req entity.WithdrawEnti
 
 	account, err := f.financialRepository.GetBalance(ctx, req.UserID)
 	if err != nil {
-		code := "[SERVICE] Withdraw - 3"
+		code := "[SERVICE] Withdraw - 2"
 		log.Errorw(code, err)
 		return err
 	}
 
-	// Validate sufficient balance
+	// Validate balance
 	if account.Balance.LessThan(req.Amount) {
-		code := "[SERVICE] Withdraw - 2"
+		code := "[SERVICE] Withdraw - 3"
 		log.Errorw(code, errors.New("insufficient balance for withdrawal"))
 		return nil
 	}
 
+	// Log the perhitungan balance
 	newBalance := account.Balance.Sub(req.Amount)
-	log.Debugw("[SERVICE] Withdraw - Calculated New Balance", "userID", req.UserID, "currentBalance", account.Balance, "newBalance", newBalance)
+	log.Debugw("[SERVICE] Withdraw - 4 -Calculated New Balance", "userID", req.UserID, "currentBalance", account.Balance, "newBalance", newBalance)
 
 	err = f.financialRepository.Withdraw(ctx, req)
 	if err != nil {
-		code := "[SERVICE] Withdraw - 3"
+		code := "[SERVICE] Withdraw - 5"
 		log.Errorw(code, err)
 		return err
 	}

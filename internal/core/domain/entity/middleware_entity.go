@@ -1,5 +1,6 @@
 package entity
 
 type UserData struct {
-	UserID string `json:"user_id"`
+	UserID   string `json:"userId"`
+	RoleName string `json:"roleName"`
 }

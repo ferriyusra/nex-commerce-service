@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"nex-commerce-service/database/seeds"
 
 	"github.com/rs/zerolog/log"
 	"gorm.io/driver/postgres"
@@ -32,10 +33,10 @@ func (cfg Config) ConnectionPostgres() (*Postgres, error) {
 		return nil, err
 	}
 
-	// seeds.UserSeller(db)
-	// seeds.UserAdmin(db)
-	// seeds.Product(db)
-	// seeds.Account(db)
+	seeds.UserSeller(db)
+	seeds.UserAdmin(db)
+	seeds.Product(db)
+	seeds.Account(db)
 
 	sqlDB.SetMaxOpenConns(cfg.Psql.DBMaxOpen)
 	sqlDB.SetMaxIdleConns(cfg.Psql.DBMaxIdle)

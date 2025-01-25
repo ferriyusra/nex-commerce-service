@@ -37,6 +37,7 @@ func (o *Options) CheckToken() func(*fiber.Ctx) error {
 		}
 
 		c.Locals("user", claims)
+		c.Locals("roleName", claims.RoleName)
 		return c.Next()
 	}
 }

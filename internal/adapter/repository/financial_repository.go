@@ -35,7 +35,7 @@ func (f *financialRepository) Deposit(ctx context.Context, req entity.DepositEnt
 			return err
 		}
 
-		// Ensure the deposit amount is valid
+		// pastikan jumlah deposit valid
 		if req.Amount.LessThanOrEqual(decimal.Zero) {
 			code := "[REPOSITORY] Deposit - 2"
 			log.Errorw(code, errors.New("invalid deposit amount"))
@@ -45,7 +45,7 @@ func (f *financialRepository) Deposit(ctx context.Context, req entity.DepositEnt
 		// Calculate the new balance in the repository
 		newBalance := account.Balance.Add(req.Amount)
 
-		// Update the account balance
+		// Update account balance table
 		result := tx.Model(&account).
 			Where("version = ?", account.Version).
 			Updates(map[string]interface{}{
@@ -60,6 +60,7 @@ func (f *financialRepository) Deposit(ctx context.Context, req entity.DepositEnt
 			return result.Error
 		}
 
+		// cegah concurrent updates
 		if result.RowsAffected == 0 {
 			code := "[REPOSITORY] Deposit - 4"
 			log.Errorw(code, errors.New("concurrent update conflict"))
@@ -92,14 +93,14 @@ func (f *financialRepository) Withdraw(ctx context.Context, req entity.WithdrawE
 			return errors.New("invalid withdrawal amount")
 		}
 
-		// Check if the account has sufficient balance for withdrawal
+		// periksa apakah akun memiliki saldo yang cukup untuk penarikan
 		if account.Balance.LessThan(req.Amount) {
 			code := "[REPOSITORY] Withdraw - 3"
 			log.Errorw(code, errors.New("insufficient"))
 			return errors.New("insufficient funds")
 		}
 
-		// Subtract the withdrawal amount from the balance
+		// kurangi penarikan saldo
 		newBalance := account.Balance.Sub(req.Amount)
 
 		// Update account balance with optimistic locking
@@ -115,7 +116,7 @@ func (f *financialRepository) Withdraw(ctx context.Context, req entity.WithdrawE
 			return result.Error
 		}
 
-		// Prevent concurrent updates
+		// cegah concurrent updates
 		if result.RowsAffected == 0 {
 			code := "[REPOSITORY] Withdraw - 4"
 			log.Errorw(code, errors.New("concurrent update conflict"))
